@@ -48,7 +48,7 @@ df_merge[is.na(df_merge)]<-0
 
 df_merge = subset(df_merge, select=-c(Rating, Change.., Change))
 
-write.csv(df_merge, "./stockProject/data/ML_merge.csv", row.names = FALSE)
+write.csv(df_merge, "./stockproject/data/ML_merge.csv", row.names = FALSE)
 
 
 
