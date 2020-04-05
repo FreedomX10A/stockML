@@ -7,29 +7,25 @@ Created on Fri Mar 27 22:58:01 2020
 
 import numpy as np
 import pandas as pd
-import glob
 import os
 import re
 from keras.layers import LSTM,Dense, TimeDistributed, Reshape, Lambda, Input
 from keras.models import Model
-from keras.activations import softmax
-from keras.backend import argmax
 import keras
 from keras.utils import np_utils
 
-from sklearn.metrics import accuracy_score
 
 
 observed_days = 60
 future_days = 30
 train_pct = 0.86
 num_samp_per_stock = 20
-min_pct_increase = 0.1
+min_pct_increase = 0.1 # this is equivilant to 10%
 
 #Read data
-df_merge = pd.read_csv("./stockProject/data/ML_dataset/ML_merge.csv")
+df_merge = pd.read_csv("./stockProject/data/ML_merge.csv")
 #Drop redundant columns
-df_merge = df_merge.drop(['Last', 'Change..', 'Change', 'Volume', 'Last.1', 'Market.Capitalization.1', 'Price.to.Earnings.Ratio..TTM..1',
+df_merge = df_merge.drop(['Last', 'Volume', 'Last.1', 'Market.Capitalization.1', 'Price.to.Earnings.Ratio..TTM..1',
                           'Basic.EPS..TTM..1', 'Last.2', 'Basic.EPS..TTM..2', 'EPS.Diluted..FY..1'], axis=1)
 
 Names = df_merge['Ticker']
@@ -149,7 +145,7 @@ for file in glob.glob("./stockProject/data/ML_dataset/downloadStocks/./*.csv"):
     print(file)
 """
 # have to redo names
-Names = os.listdir("./stockProject/data/ML_dataset/downloadStocks/")
+Names = os.listdir("./stockproject/data/ML_dataset/downloadStocks/")
 
 
 
@@ -168,7 +164,7 @@ X_financials_test = []
 for name in Names:
     
 
-    df = pd.read_csv("./stockProject/data/ML_dataset/downloadStocks/" + name)
+    df = pd.read_csv("./stockproject/data/ML_dataset/downloadStocks/" + name)
     
     myName = name
     
@@ -322,7 +318,7 @@ model.fit([X_train_B, X_financials_train_B, todayVal_train_B[...,np.newaxis]], Y
                     epochs=100)
 
 
-
+model.save('stockClassifier.h5')
 
 
 
@@ -361,15 +357,37 @@ print(confusion_matrix(Y_test_classes, Y_pred_classes))
 
 samples_predicted_true = np.where(Y_pred_classes == 0)[0]
 tp_samples = np.where(  np.logical_and( Y_pred_classes == 0 , Y_test_classes == 0 ) )[0]
-tn_samples = np.where(  np.logical_and( Y_pred_classes == 0 , Y_test_classes != 0 ) )[0]
+fp_samples = np.where(  np.logical_and( Y_pred_classes == 0 , Y_test_classes != 0 ) )[0]
 
-earnings_from_tn_samples = (lastDayVal_test[tn_samples] - todayVal_test[tn_samples])/lastDayVal_test[tn_samples]
-earnings_from_tn_samples = np.nan_to_num(earnings_from_tn_samples, -1)
-total_change_from_tn_samples = earnings_from_tn_samples.sum()
-average_pct_earnings = ( len(tp_samples) * min_pct_increase + total_change_from_tn_samples ) / len(samples_predicted_true)
+earnings_from_fp_samples = (lastDayVal_test[fp_samples] - todayVal_test[fp_samples])/todayVal_test[fp_samples]
+
+#sanity check
+np.where(earnings_from_fp_samples < -1) # this should find nothing
+problems = np.where(earnings_from_fp_samples > min_pct_increase) # check for any unexpected outcomes
+earnings_from_fp_samples[problems] # print them out.
+# I observed 2 samples in fp that has a pct change of 0.1, I guess that's the issue with comparing close values in floats,
+# This shouldn't effect the final results.
+
+
+earnings_from_fp_samples = np.nan_to_num(earnings_from_fp_samples, -1) # just in case if there are any Nans
+total_change_from_fp_samples = earnings_from_fp_samples.sum()
+average_pct_earnings = ( len(tp_samples) * min_pct_increase + total_change_from_fp_samples ) / len(samples_predicted_true)
 
 print("Expected monthly percent earnings " + str(average_pct_earnings))
 
 
+small_vals = np.where(todayVal_test < 0.1)[0]
+today = np.delete(todayVal_test, small_vals)
+last_day = np.delete(lastDayVal_test, small_vals)
+
+Buy_and_Hold = (today - last_day)/today
+Buy_and_Hold = np.nan_to_num(Buy_and_Hold, 0)
+#Buy_and_Hold[np.isneginf(Buy_and_Hold)] = 0
+print("Expected return from buy and hold = ", str(Buy_and_Hold.mean()))
+
+
 # add time series predictions, LSTM ?
 # use neural ODE for this ? 
+
+
+#X_financials_test[samples_predicted_true[0:-1],-4].sum()
