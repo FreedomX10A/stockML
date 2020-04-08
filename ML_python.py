@@ -350,7 +350,7 @@ accuracy = (tp+tn)/(tp+tn+fp+fn)
 print("test accuracy = " + str(accuracy))
 
 sucess_rate = tp/(fp + tp)
-print("sucess rate = " + str(sucess_rate))
+print("percision = " + str(sucess_rate))
 
 
 print(confusion_matrix(Y_test_classes, Y_pred_classes))
