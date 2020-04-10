@@ -30,8 +30,8 @@ min_pct_increase = 0.1 # this is equivilant to 10%
 #Read data
 df_merge = pd.read_csv("./stockProject/data/ML_merge.csv")
 #Drop redundant columns
-df_merge = df_merge.drop(['Last', 'Volume', 'Last.1', 'Market.Capitalization.1', 'Price.to.Earnings.Ratio..TTM..1',
-                          'Basic.EPS..TTM..1', 'Last.2', 'Basic.EPS..TTM..2', 'EPS.Diluted..FY..1'], axis=1)
+#df_merge = df_merge.drop(['Last', 'Volume', 'Last.1', 'Market.Capitalization.1', 'Price.to.Earnings.Ratio..TTM..1',
+#                          'Basic.EPS..TTM..1', 'Last.2', 'Basic.EPS..TTM..2', 'EPS.Diluted..FY..1'], axis=1)
 
 Names = df_merge['Ticker']
 
