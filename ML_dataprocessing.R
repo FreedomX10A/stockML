@@ -46,7 +46,23 @@ for (name in names){
 
 df_merge[is.na(df_merge)]<-0
 
-df_merge = subset(df_merge, select=-c(Rating, Change.., Change))
+#df_merge = subset(df_merge, select=-c(Rating, Change.., Change))
+
+colnames(df_merge)
+
+
+# Select specific columns in the dataframe, specifically to remove columns that might be used to directly compute 
+# today's stock price from the financial data such as price to earning ratio TT, dividend yeild and such. 
+# Only features that are computed purely from the companies financial performance in the past year are included.
+# Anything feawtures that uses today's stock price to compute should be excluded
+
+df_merge = subset(df_merge, select=c(Ticker, Number.of.Employees, Sector, EPS.Diluted..FY., Enterprise.Value..MRQ., Total.Shares.Outstanding..MRQ., Dividends.Paid..FY.,
+                          Dividends.per.Share..FY., Gross.Margin..TTM., Operating.Margin..TTM., Pretax.Margin..TTM., Net.Margin..TTM., 
+                          Basic.EPS..FY., Gross.Profit..MRQ., Gross.Profit..FY., Total.Revenue..FY.,
+                          EPS.Diluted..FY., Last.Year.Revenue..FY., Net.Income..FY., Current.Ratio..MRQ., Debt.to.Equity.Ratio..MRQ., 
+                          Net.Debt..MRQ., Quick.Ratio..MRQ., Total.Assets..MRQ., Total.Debt..MRQ., Total.Current.Assets..MRQ.))
+
+
 
 write.csv(df_merge, "./stockproject/data/ML_merge.csv", row.names = FALSE)
 

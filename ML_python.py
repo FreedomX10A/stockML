@@ -25,8 +25,8 @@ min_pct_increase = 0.1 # this is equivilant to 10%
 #Read data
 df_merge = pd.read_csv("./stockProject/data/ML_merge.csv")
 #Drop redundant columns
-df_merge = df_merge.drop(['Last', 'Volume', 'Last.1', 'Market.Capitalization.1', 'Price.to.Earnings.Ratio..TTM..1',
-                          'Basic.EPS..TTM..1', 'Last.2', 'Basic.EPS..TTM..2', 'EPS.Diluted..FY..1'], axis=1)
+#df_merge = df_merge.drop(['Last', 'Volume', 'Last.1', 'Market.Capitalization.1', 'Price.to.Earnings.Ratio..TTM..1',
+ #                         'Basic.EPS..TTM..1', 'Last.2', 'Basic.EPS..TTM..2', 'EPS.Diluted..FY..1'], axis=1)
 
 Names = df_merge['Ticker']
 
@@ -361,12 +361,15 @@ fp_samples = np.where(  np.logical_and( Y_pred_classes == 0 , Y_test_classes != 
 
 earnings_from_fp_samples = (lastDayVal_test[fp_samples] - todayVal_test[fp_samples])/todayVal_test[fp_samples]
 
+# avoid problems when dividing by zero
+np.nan_to_num(earnings_from_fp_samples, 0)
 #sanity check
 np.where(earnings_from_fp_samples < -1) # this should find nothing
 problems = np.where(earnings_from_fp_samples > min_pct_increase) # check for any unexpected outcomes
-earnings_from_fp_samples[problems] # print them out.
+print(earnings_from_fp_samples[problems]) # print them out.
 # I observed 2 samples in fp that has a pct change of 0.1, I guess that's the issue with comparing close values in floats,
 # This shouldn't effect the final results.
+earnings_from_fp_samples[problems] = 0
 
 
 earnings_from_fp_samples = np.nan_to_num(earnings_from_fp_samples, -1) # just in case if there are any Nans

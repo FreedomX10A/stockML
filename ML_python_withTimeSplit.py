@@ -381,6 +381,9 @@ fp_samples = np.where(  np.logical_and( Y_pred_classes == 0 , Y_test_classes != 
 
 earnings_from_fp_samples = (lastDayVal_test[fp_samples] - todayVal_test[fp_samples])/todayVal_test[fp_samples]
 
+
+# avoid problems when dividing by zero
+np.nan_to_num(earnings_from_fp_samples, 0)
 #sanity check
 np.where(earnings_from_fp_samples < -1) # this should find nothing
 problems = np.where(earnings_from_fp_samples > min_pct_increase) # check for any unexpected outcomes
